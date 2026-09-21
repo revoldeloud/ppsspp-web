@@ -1490,3 +1490,99 @@ body.drive-connected .drive-sync-btn { display: inline-flex !important; }
 }
 .opfs-file-actions button:hover { background: var(--surface3); border-color: var(--border2); }
 .opfs-file-actions button.del:hover { background: rgba(255,95,95,.12); color: var(--danger); border-color: rgba(255,95,95,.3); }
+
+/* ==========================================================================
+   OVERRIDE: Experiência "emulador puro" — sem UI externa do wrapper.
+   Objetivo: abrir a página e cair direto no PPSSPP (igual Android/PC),
+   sem header, sem tela de welcome, sem painel lateral por padrão.
+   Nada abaixo remove funcionalidade — só esconde a casca externa.
+   ========================================================================== */
+
+/* Header (Open Game, Start PPSSPP, GPU select, etc.) fica oculto.
+   O emulador é iniciado via script (auto-start) e o "Load Game" nativo
+   do PPSSPP passa a acionar o input file oculto. */
+header { display: none !important; }
+
+/* Tela de welcome ("Your PSP is waiting") nunca aparece — o emulador
+   inicia sozinho assim que a página carrega. */
+#idleOverlay { display: none !important; }
+
+/* Canvas ocupa 100% da viewport, sem descontar altura de header. */
+.body-main {
+  grid-template-columns: 1fr !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+}
+body.panel-open .body-main { grid-template-columns: 1fr !important; }
+
+/* Painel lateral vira um overlay flutuante SOBRE o canvas — como o
+   Game Browser do PPSSPP nativo — em vez de uma coluna ao lado.
+   Começa visível (o usuário precisa ver a biblioteca ao abrir a
+   página), fecha quando body.panel-open é removido (ao escolher um
+   jogo) e volta a abrir pelo ícone #panelToggleBtn. Só a aba Library
+   é exibida; Saves/Network/Drive/OPFS/Info/Log/About não existem no
+   app nativo e ficam ocultas. */
+aside {
+  display: grid;
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  left: max(10px, env(safe-area-inset-left));
+  right: max(10px, env(safe-area-inset-right));
+  z-index: 40;
+  max-width: 640px;
+  max-height: min(70vh, 70dvh);
+  border-left: none !important;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+}
+body:not(.panel-open) aside { display: none; }
+
+/* Botão para reabrir a biblioteca, sempre visível sobre o canvas —
+   substitui a antiga barra "Panel" do header. */
+#panelToggleBtn {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  z-index: 41;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(20,22,26,.55);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #fff;
+  backdrop-filter: blur(6px);
+  opacity: .6;
+}
+#panelToggleBtn .btn-lbl { display: none; }
+#panelToggleBtn .lucide { width: 18px; height: 18px; }
+body.panel-open #panelToggleBtn { display: none; }
+
+/* Elementos que não existem no PPSSPP nativo — ocultos */
+aside .status-bar,
+aside .panel-tab-select-wrap,
+aside .tabs { display: none !important; }
+
+/* Só a aba Library é renderizada; as demais tabs (Saves, Network,
+   Drive, OPFS, Info, Log, About) ficam fora do fluxo. */
+aside .tab-panel { display: none !important; }
+aside .tab-panel#tabLibrary { display: block !important; }
+
+.stage {
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: none !important;
+  padding: 0 !important;
+}
+
+canvas#canvas {
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
